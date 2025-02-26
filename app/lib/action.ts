@@ -20,6 +20,7 @@ const CreateInvoice = FormSchema.omit({id: true, date: true});
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function createInvoice(formData:FormData) {
+
     const {customerId, amount, status} = CreateInvoice.parse({
         customerId: formData.get('customerId'),
         amount: formData.get('amount'),
@@ -28,10 +29,20 @@ export async function createInvoice(formData:FormData) {
     const amountInCents = amount * 100;
     const date = new Date().toISOString().split('T')[0];
 
-    await sql `
+    try{
+      await sql `
         INSERT INTO invoices (customer_id, amount, status, date)
         VALUES (${customerId},${amountInCents},${status},${date})
         `;
+    }
+    catch(error)
+    {
+      // Log the rror to the console for now
+      console.log(error);
+
+    }
+
+    
 
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices');
@@ -58,6 +69,9 @@ export async function updateInvoice(id: string, formData: FormData) {
   }
 
   export async function deleteInvoice(id: string) {
+    throw new Error('Failed to Delete Invoice');
+
+    // Unreachable code block
     await sql`DELETE FROM invoices WHERE id = ${id}`;
     revalidatePath('/dashboard/invoices');
   }
